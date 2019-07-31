@@ -1,0 +1,28 @@
+{
+  "name": "serverless-log-funnel",
+  "version": "0.0.0",
+  "description": "Forward logs events to a lambda defined in the same servereless deploy.",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mweitzel/servereless-log-funnel.git"
+  },
+  "keywords": [
+    "serverless",
+    "sls",
+    "log",
+    "logs",
+    "loggroup",
+    "cloudwatch",
+    "subscription"
+  ],
+  "author": "Matthew Weitzel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/mweitzel/servereless-log-funnel/issues"
+  },
+  "homepage": "https://github.com/mweitzel/servereless-log-funnel#readme"
+}
