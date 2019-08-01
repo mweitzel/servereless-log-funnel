@@ -38,13 +38,9 @@ class ServerlessPlugin {
   fnNames() {
     const fns = this.serverless.service.functions
     const target = this.targetFn()
-    const sources = []
-    Object.keys(fns).map(k => fns[k]).forEach((fn) => {
-      if(fn.name != target.name) {
-        sources.push(fn)
-      }
-    })
-    return sources.map(s => s.name)
+    return Object.values(fns)
+      .filter((fn) => fn.name != target.name)
+      .map((s) => s.name)
   }
 }
 
