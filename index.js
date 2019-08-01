@@ -1,5 +1,7 @@
 'use strict';
 
+const { dig } = require('./helper')
+
 class ServerlessPlugin {
   constructor(serverless, options) {
     this.serverless = serverless;
@@ -9,7 +11,7 @@ class ServerlessPlugin {
   }
 
   appendEventsToTargetFunction() {
-    if (this.targetDefined() && this.targetExists()) {
+    if (this.targetConfigDefined() && this.targetExists()) {
       const fnLogEvents = this.fnNames().map(function(name) {
         return { cloudwatchLog: '/aws/lambda/'+name }
       })
@@ -18,14 +20,11 @@ class ServerlessPlugin {
     }
   }
 
-  targetDefined() {
-    const custom = this.serverless.service.custom
-    if (custom === undefined) { return false }
-    const config = custom.logfunnel
-    if (config === undefined) { return false }
-    const target = config.target
-    if (target === undefined || target === '') { return false }
-    return true
+  targetConfig() {
+    return dig(this, 'serverless.service.custom.logfunnel.target')
+  }
+  targetConfigDefined() {
+    return !!this.targetConfig()
   }
 
   targetExists() {
@@ -33,13 +32,7 @@ class ServerlessPlugin {
   }
 
   targetFn() {
-    const custom = this.serverless.service.custom
-    if (custom === undefined) { return }
-    const config = custom.logfunnel
-    if (config === undefined) { return }
-    const target = config.target
-    if (target === undefined || target === '') { return }
-    return this.serverless.service.functions[target]
+    return this.serverless.service.functions[this.targetConfig()]
   }
 
   fnNames() {

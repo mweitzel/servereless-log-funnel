@@ -1,5 +1,6 @@
 const plugin = require('./index')
 const ts = require('./test-helper')
+const { dig } = require('./helper')
 const $ = ts.$
 const equal = ts.equal
 
@@ -16,6 +17,13 @@ function test() {
 
   eventAdder.appendEventsToTargetFunction()
   $(actualSls).should(equal(expectedSls))
+}
+
+testDig()
+function testDig() {
+  const foo = { bar: { baz: { bing: 5 } } }
+  $(dig(foo, 'bar.baz.bing')).should(equal(5))
+  $(dig({}, 'bar.baz.bing')).should(equal(undefined))
 }
 
 function slsConfig() {
