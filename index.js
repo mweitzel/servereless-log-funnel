@@ -28,7 +28,7 @@ class ServerlessPlugin {
   }
 
   targetExists() {
-    return this.targetFn() !== undefined
+    return !!this.targetFn()
   }
 
   targetFn() {
