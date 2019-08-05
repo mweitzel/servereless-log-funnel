@@ -8,7 +8,7 @@ The following configuration in your `serverless.yml`
 ```
 custom:
   logfunnel:
-    targetfn: logHandler                # must match functions.value
+    targetfn: logHandler                # required
     enabled: true/false                 # optional, defaults to true
     filter:  '{ $.something = stuff }'  # optional, defaults to no filter and everything is forwarded
 
@@ -20,10 +20,12 @@ functions:
     logHandler:
       enabled: true/false               # optional, defaults to custom.logfunnel.enabled
       filter: '{ $.something = stuff }' # optional, defaults to custom.logfunnel.filter
-  logHandler:                           # must match custom.logfunnel.targetfn
+  logHandler:                           # required
     handler: myLogHandler
 ```
 will configure logfunnel to receive cloudwatch events from fnA and fnB
+
+`custom.logfunnel.targetfn.someFunctionName` is required and must match `functions.someFunctionName`
 
 ### Testing
 
