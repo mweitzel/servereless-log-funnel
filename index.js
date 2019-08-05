@@ -12,16 +12,25 @@ class ServerlessPlugin {
 
   appendEventsToTargetFunction() {
     if (this.targetConfigDefined() && this.targetExists()) {
-      const fnLogEvents = this.fnNames().map(function(name) {
-        return { cloudwatchLog: '/aws/lambda/'+name }
+      const filter = this.filterConfig()
+      const newEvents = this.nonTargetFns().map(function(fn) {
+        const sourceLogGeroup = '/aws/lambda/'+fn.name
+        if (filter) {
+          return { cloudwatchLog: { logGroup: sourceLogGeroup, filter: filter } }
+        } else {
+          return { cloudwatchLog: sourceLogGeroup }
+        }
       })
       const existingEvents = this.targetFn().events
-      this.targetFn().events = [].concat.apply(existingEvents, fnLogEvents)
+      this.targetFn().events = [].concat.apply(existingEvents, newEvents)
     }
   }
 
   targetConfig() {
     return dig(this, 'serverless.service.custom.logfunnel.target')
+  }
+  filterConfig() {
+    return dig(this, 'serverless.service.custom.logfunnel.filter')
   }
   targetConfigDefined() {
     return !!this.targetConfig()
@@ -35,12 +44,10 @@ class ServerlessPlugin {
     return this.serverless.service.functions[this.targetConfig()]
   }
 
-  fnNames() {
+  nonTargetFns() {
     const fns = this.serverless.service.functions
     const target = this.targetFn()
-    return Object.values(fns)
-      .filter((fn) => fn.name != target.name)
-      .map((s) => s.name)
+    return Object.values(fns).filter((fn) => fn.name != target.name)
   }
 }
 
