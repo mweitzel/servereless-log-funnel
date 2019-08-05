@@ -12,8 +12,18 @@ class ServerlessPlugin {
 
   appendEventsToTargetFunction() {
     if (this.targetConfigDefined() && this.targetExists()) {
+      const defaultEnabled = this.enabledConfig()
       const defaultFilter = this.filterConfig()
-      const newEvents = this.nonTargetFns().map(function(fn) {
+      const newEvents = this.nonTargetFns().filter((fn) => {
+        // with config defaulting to on, fn must explicitly specify off
+        // with config defaulting to off, fn must explicitly specify on
+        if (defaultEnabled) {
+          return true && !(dig(fn, 'logfunnel.enabled') === false)
+        } else {
+          return false || (dig(fn, 'logfunnel.enabled') === true)
+        }
+        return defaultEnabled
+      }).map(function(fn) {
         const sourceLogGeroup = '/aws/lambda/'+fn.name
         const filter = getFilter.call(fn) || defaultFilter
         if (filter) {
@@ -32,6 +42,10 @@ class ServerlessPlugin {
   }
   filterConfig() {
     return dig(this, 'serverless.service.custom.logfunnel.filter')
+  }
+  enabledConfig() {
+    const enabledFlag = dig(this, 'serverless.service.custom.logfunnel.enabled')
+    return enabledFlag === true || enabledFlag === undefined
   }
   targetConfigDefined() {
     return !!this.targetConfig()

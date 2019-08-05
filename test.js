@@ -76,6 +76,36 @@ module.exports = {
     eventAdder.appendEventsToTargetFunction()
     $(actualSls).should(equal(expectedSls))
   },
+  testEnabledByDefaultWithDisableOverride: function() {
+    const actualSls = slsConfig()
+    actualSls.service.custom.logfunnel = { target: 'myFunnel' }
+    actualSls.service.functions.foofn.logfunnel = { enabled: false }
+
+    const expectedSls = deepCopy(actualSls)
+    expectedSls.service.functions.myFunnel.events = [
+      { cloudwatchLog: '/aws/lambda/projectname-stage-barfn' },
+    ]
+
+    const eventAdder = new plugin(actualSls)
+
+    eventAdder.appendEventsToTargetFunction()
+    $(actualSls).should(equal(expectedSls))
+  },
+  testDisableByDefaultWithEnableOverride: function() {
+    const actualSls = slsConfig()
+    actualSls.service.custom.logfunnel = { target: 'myFunnel', enabled: false}
+    actualSls.service.functions.foofn.logfunnel = { enabled: true }
+
+    const expectedSls = deepCopy(actualSls)
+    expectedSls.service.functions.myFunnel.events = [
+      { cloudwatchLog: '/aws/lambda/projectname-stage-foofn' },
+    ]
+
+    const eventAdder = new plugin(actualSls)
+
+    eventAdder.appendEventsToTargetFunction()
+    $(actualSls).should(equal(expectedSls))
+  },
   testDig: function() {
     const foo = { bar: { baz: { bing: 5 } } }
     $(dig(foo, 'bar.baz.bing')).should(equal(5))
