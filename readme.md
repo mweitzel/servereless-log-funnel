@@ -20,7 +20,7 @@ functions:
     logHandler:
       enabled: true/false               # optional, defaults to custom.logfunnel.enabled
       filter: '{ $.something = stuff }' # optional, defaults to custom.logfunnel.filter
-  logHandler:                           # required
+  logHandler:                           # required, custom.logfunnel.targetfn should match this
     handler: myLogHandler
 ```
 will configure `logHandler` to receive cloudwatch events from `fnA` and `fnB`
