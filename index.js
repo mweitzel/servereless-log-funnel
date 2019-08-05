@@ -12,9 +12,10 @@ class ServerlessPlugin {
 
   appendEventsToTargetFunction() {
     if (this.targetConfigDefined() && this.targetExists()) {
-      const filter = this.filterConfig()
+      const defaultFilter = this.filterConfig()
       const newEvents = this.nonTargetFns().map(function(fn) {
         const sourceLogGeroup = '/aws/lambda/'+fn.name
+        const filter = getFilter.call(fn) || defaultFilter
         if (filter) {
           return { cloudwatchLog: { logGroup: sourceLogGeroup, filter: filter } }
         } else {
@@ -49,6 +50,10 @@ class ServerlessPlugin {
     const target = this.targetFn()
     return Object.values(fns).filter((fn) => fn.name != target.name)
   }
+}
+
+function getFilter() {
+  return dig(this, 'logfunnel.filter')
 }
 
 module.exports = ServerlessPlugin;

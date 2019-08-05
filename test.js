@@ -38,6 +38,44 @@ module.exports = {
     eventAdder.appendEventsToTargetFunction()
     $(actualSls).should(equal(expectedSls))
   },
+  testConfigFnFilterOverride: function() {
+    const actualSls = slsConfig()
+    actualSls.service.custom.logfunnel = { target: 'myFunnel' }
+    actualSls.service.functions.barfn.logfunnel = { filter: '{ $.something = stuff }' }
+
+    const expectedSls = deepCopy(actualSls)
+    expectedSls.service.functions.myFunnel.events = [
+      { cloudwatchLog: '/aws/lambda/projectname-stage-foofn' },
+      { cloudwatchLog:
+        { logGroup: '/aws/lambda/projectname-stage-barfn',
+          filter: '{ $.something = stuff }' } },
+    ]
+
+    const eventAdder = new plugin(actualSls)
+
+    eventAdder.appendEventsToTargetFunction()
+    $(actualSls).should(equal(expectedSls))
+  },
+  testConfigBothDefaultAndCustomFilter: function() {
+    const actualSls = slsConfig()
+    actualSls.service.custom.logfunnel = { target: 'myFunnel', filter: '{ $.level = potato }' }
+    actualSls.service.functions.barfn.logfunnel = { filter: '{ $.something = stuff }' }
+
+    const expectedSls = deepCopy(actualSls)
+    expectedSls.service.functions.myFunnel.events = [
+      { cloudwatchLog:
+        { logGroup: '/aws/lambda/projectname-stage-foofn',
+          filter: '{ $.level = potato }' } },
+      { cloudwatchLog:
+        { logGroup: '/aws/lambda/projectname-stage-barfn',
+          filter: '{ $.something = stuff }' } },
+    ]
+
+    const eventAdder = new plugin(actualSls)
+
+    eventAdder.appendEventsToTargetFunction()
+    $(actualSls).should(equal(expectedSls))
+  },
   testDig: function() {
     const foo = { bar: { baz: { bing: 5 } } }
     $(dig(foo, 'bar.baz.bing')).should(equal(5))
