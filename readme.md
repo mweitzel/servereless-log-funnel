@@ -23,7 +23,7 @@ functions:
   logHandler:                           # required
     handler: myLogHandler
 ```
-will configure logfunnel to receive cloudwatch events from fnA and fnB
+will configure `logHandler` to receive cloudwatch events from `fnA` and `fnB`
 
 `custom.logfunnel.targetfn.someFunctionName` is required and must match `functions.someFunctionName`
 
