@@ -12,16 +12,40 @@ class ServerlessPlugin {
 
   appendEventsToTargetFunction() {
     if (this.targetConfigDefined() && this.targetExists()) {
-      const fnLogEvents = this.fnNames().map(function(name) {
-        return { cloudwatchLog: '/aws/lambda/'+name }
+      const defaultEnabled = this.enabledConfig()
+      const defaultFilter = this.filterConfig()
+      const newEvents = this.nonTargetFns().filter((fn) => {
+        // with config defaulting to on, fn must explicitly specify off
+        // with config defaulting to off, fn must explicitly specify on
+        if (defaultEnabled) {
+          return true && !(dig(fn, 'logfunnel.enabled') === false)
+        } else {
+          return false || (dig(fn, 'logfunnel.enabled') === true)
+        }
+        return defaultEnabled
+      }).map(function(fn) {
+        const sourceLogGeroup = '/aws/lambda/'+fn.name
+        const filter = getFilter.call(fn) || defaultFilter
+        if (filter) {
+          return { cloudwatchLog: { logGroup: sourceLogGeroup, filter: filter } }
+        } else {
+          return { cloudwatchLog: sourceLogGeroup }
+        }
       })
       const existingEvents = this.targetFn().events
-      this.targetFn().events = [].concat.apply(existingEvents, fnLogEvents)
+      this.targetFn().events = [].concat.apply(existingEvents, newEvents)
     }
   }
 
   targetConfig() {
     return dig(this, 'serverless.service.custom.logfunnel.target')
+  }
+  filterConfig() {
+    return dig(this, 'serverless.service.custom.logfunnel.filter')
+  }
+  enabledConfig() {
+    const enabledFlag = dig(this, 'serverless.service.custom.logfunnel.enabled')
+    return enabledFlag === true || enabledFlag === undefined
   }
   targetConfigDefined() {
     return !!this.targetConfig()
@@ -35,13 +59,15 @@ class ServerlessPlugin {
     return this.serverless.service.functions[this.targetConfig()]
   }
 
-  fnNames() {
+  nonTargetFns() {
     const fns = this.serverless.service.functions
     const target = this.targetFn()
-    return Object.values(fns)
-      .filter((fn) => fn.name != target.name)
-      .map((s) => s.name)
+    return Object.values(fns).filter((fn) => fn.name != target.name)
   }
+}
+
+function getFilter() {
+  return dig(this, 'logfunnel.filter')
 }
 
 module.exports = ServerlessPlugin;

@@ -1,6 +1,6 @@
 {
   "name": "serverless-log-funnel",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Forward logs events to a lambda defined in the same servereless deploy.",
   "main": "index.js",
   "scripts": {
